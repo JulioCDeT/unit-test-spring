@@ -3,6 +3,7 @@ package io.juliocdet.unittesting.unittesting.repository;
 
 import io.juliocdet.unittesting.unittesting.model.Mascota;
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,15 @@ public class MascotaRepositoryTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private MascotasDao employeeRepository;
+    private MascotasDao mascotasDao;
+
+    @BeforeEach
+    public void setup() {
+        entityManager.clear();
+    }
 
     @Test
-    public void save_test() {
+    public void findById_getMascotaById_test() {
         // Given
         Mascota mascota = Mascota.builder()
                 .nombre("Perro1")
@@ -31,10 +37,11 @@ public class MascotaRepositoryTest {
                 .tipo("perro")
                 .build();
         entityManager.persist(mascota);
+        int idToLookFor = (Integer) entityManager.getId(mascota);
         entityManager.flush();
 
         // When
-        Optional<Mascota> optionalMascota = employeeRepository.findById(1);
+        Optional<Mascota> optionalMascota = mascotasDao.findById(idToLookFor);
 
         // Them
         if (optionalMascota.isPresent()) {
@@ -42,7 +49,28 @@ public class MascotaRepositoryTest {
         } else {
             Assert.fail();
         }
+    }
 
+    @Test
+    public void findById_notFound_test() {
+        Assert.assertTrue(mascotasDao.findById(1999).isEmpty());
+    }
+
+    @Test
+    public void delete_test() {
+        Mascota mascota = Mascota.builder()
+                .tipo("tipoChido")
+                .edad(22)
+                .nombre("shima")
+                .build();
+
+        entityManager.persist(mascota);
+        int idToLookFor = (Integer) entityManager.getId(mascota);
+        entityManager.flush();
+
+        mascotasDao.deleteById(1);
+        Optional<Mascota> mascotaOptional = mascotasDao.findById(idToLookFor);
+        Assert.assertTrue(mascotaOptional.isEmpty());
     }
 
 }

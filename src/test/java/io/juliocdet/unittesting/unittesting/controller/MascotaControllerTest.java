@@ -17,11 +17,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+
 import java.util.Arrays;
+
 import java.util.List;
 
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(MascotasController.class)
@@ -66,14 +67,32 @@ public class MascotaControllerTest {
         RequestBuilder request = MockMvcRequestBuilders
                 .get("/api/mascotas");
 
-        mvc.perform(request) // When
-                .andExpect(status().isOk()); //Then
-
         MvcResult result = mvc.perform(request).andReturn();
         String resultStrign = result.getResponse().getContentAsString();
+        int statusResult = result.getResponse().getStatus();
 
         String expectedResult = "[{\"id\":0,\"nombre\":\"perro\",\"edad\":4,\"tipo\":\"canino\"},{\"id\":0,\"nombre\":\"gato\",\"edad\":1,\"tipo\":\"felino\"},{\"id\":0,\"nombre\":\"pez\",\"edad\":10,\"tipo\":\"marino\"}]";
 
-        Assert.assertEquals(expectedResult, resultStrign);
+        assertEquals(expectedResult, resultStrign);
+        assertEquals(200, statusResult);
+    }
+
+    @Test
+    public void getMascotas_emptyMascotasList() throws Exception {
+        ResponseEntity response = ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body("non found");
+
+        Mockito.when(service.getAllMascotas()).thenReturn(response);
+
+        RequestBuilder request = MockMvcRequestBuilders
+                .get("/api/mascotas");
+
+        MvcResult result = mvc.perform(request).andReturn();
+        String bodyResponse = result.getResponse().getContentAsString();
+        int statusResponse = result.getResponse().getStatus();
+
+        assertEquals("non found", bodyResponse);
+        assertEquals(404, statusResponse);
     }
 }

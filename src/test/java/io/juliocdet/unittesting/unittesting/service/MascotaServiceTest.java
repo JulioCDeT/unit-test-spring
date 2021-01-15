@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,14 +20,13 @@ import static org.hamcrest.Matchers.equalTo;
 public class MascotaServiceTest {
 
     @Mock
-    private MascotasDao repository;
+    private MascotasDao mascotasDao;
 
     @InjectMocks
     private MascotasService service;
 
     @Test
-    public void getAllMascotas_positiveTest() {
-
+    public void getAllMascotas_positive_test() {
 
         Mascota mascota = Mascota.builder()
                 .nombre("perro1")
@@ -37,11 +37,13 @@ public class MascotaServiceTest {
         List<Mascota> mascotas = new ArrayList<>();
         mascotas.add(mascota);
 
-        Mockito.when(repository.findAll()).thenReturn(Collections.singletonList(
-                        new Mascota(1, "perro1", 2, "canino")
-        ));
+        Mockito.when(mascotasDao.findAll()).
+                thenReturn(Collections.singletonList(mascota));
 
-        Assert.assertThat(service.getAllMascotas().getBody(), equalTo(mascotas));
+        Assert.assertThat(service.getAllMascotas().getBody(),
+                equalTo(mascotas));
+        Assert.assertThat(service.getAllMascotas().getStatusCode(),
+                equalTo(HttpStatus.OK));
     }
 
 }
